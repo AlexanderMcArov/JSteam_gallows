@@ -3,6 +3,8 @@ let btn_finish = document.querySelector('#btn_finish')
 let game_detail = document.querySelector('.game_detail')
 let detail_desc = game_detail.querySelector('.statics .discription')
 let detail_word = game_detail.querySelector('.statics .word')
+
+// game_status - отвечает за текущий игровой статус в игре.
 let game_status = {
     win() {
         document.querySelector('.game_table .status').innerHTML = 'Вы выиграли.'
@@ -12,9 +14,16 @@ let game_status = {
     },
     start() {
         document.querySelector('.game_table .status').innerHTML = ''
+    },
+    finish() {
+        document.querySelector('.game_table .status').innerHTML = 'Игра завершена.'
     }
 }
 
+/*
+game_body - отвечает за тело висельника, кости по порядку
+веревка,голова,тело,левая-рука,правая-рука,левая-нога,правая-нога
+*/
 let game_body = [
     document.querySelector('.rope'),
     document.querySelector('.head'),
@@ -25,9 +34,13 @@ let game_body = [
     document.querySelector('.right_foot')
 ]
 
-let isGame = false
 let errorCount = 0
 let answer = 0
+
+/*
+list_words - отвечает за варианты слов и их описание
+можно добавлять свои варианты в виде обьектов
+*/
 let list_words = [
     {
         desc: "Это что то плавающее",
@@ -35,57 +48,70 @@ let list_words = [
     }
 ]
 
-
 btn_start.addEventListener('click', startGame)
 btn_finish.addEventListener('click', finishGame)
 
+/**
+ * startGame - запускает игру.
+ * обнуляет все переменные и удаляет тело висельника
+ */
 function startGame() {
     game_status.start()
-    isGame = true
     errorCount = 0
     answer = 0
     setWord()
-    game_body.forEach((item, index) => {
+
+    // удаляет тело при старте игры
+    game_body.forEach((item) => {
         item.style.display = "none"
     })
     btn_start.style.display = "none"
     btn_finish.style.display = "block"
 }
 
+/**
+ * finishGame - заканчивает игру,
+ * очищает поля description и word в блоке statics
+ */
 function finishGame() {
-    isGame = false
-    // game_body.forEach(item => {
-    //     item.style.display = "block"
-    // })
-    clearWord()
+    detail_desc.innerHTML = ''
+    detail_word.innerHTML = ''
+
+    game_status.finish()
+
     btn_start.style.display = "block"
     btn_finish.style.display = "none"
 }
 
+/**
+ * setWord - устанавливает игровое слово,
+ * и устанавливает описание
+ */
 function setWord() {
-    let gw = list_words[Math.floor(Math.random() * list_words.length)]
-    detail_desc.innerHTML = gw.desc
-    for (let i = 0; i < gw.word.length; i++) {
+    let game_word = list_words[Math.floor(Math.random() * list_words.length)]
+    detail_desc.innerHTML = game_word.desc
+
+    // добавляет кнопки 
+    for (let i = 0; i < game_word.word.length; i++) {
         let btn = document.createElement('button')
         btn.setAttribute('id', i)
         btn.addEventListener('click', (e) => {
-            checkWord(e.target, gw.word)
+            checkWord(e.target, game_word.word)
         })
         btn.innerHTML = "X"
         detail_word.appendChild(btn)
     }
 }
 
-function clearWord() {
-    detail_desc.innerHTML = ''
-    detail_word.innerHTML = ''
-}
-
-function checkWord(btn, word) {
-    let id = btn.id
+/**
+ * checkWord - проверяет введеную букву
+ * обновляет статус игры
+ */
+function checkWord(target, word) {
+    let id = target.id
     let getLet = prompt('Введите букву').toLocaleLowerCase()
     if (getLet == word[id]) {
-        btn.innerHTML = word[id]
+        target.innerHTML = word[id]
         answer++
     } else {
         game_body[errorCount].style.display = "block"
